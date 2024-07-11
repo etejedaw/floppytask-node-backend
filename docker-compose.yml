@@ -1,0 +1,10 @@
+version: "3.1"
+
+services:
+    mariadb:
+        image: mariadb:lts-noble
+        container_name: mariadb
+        environment:
+            - MARIADB_ROOT_PASSWORD=toor
+        ports:
+            - 3306:3306
