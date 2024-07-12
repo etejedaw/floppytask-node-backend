@@ -1,6 +1,7 @@
 import express from "express";
 import { environment, sequelize } from "./config";
 import projectsRoute from "./projects/projects.route";
+import tasksRoute from "./tasks/tasks.route";
 
 import "./tasks/tasks.model";
 import "./projects/projects.model";
@@ -13,7 +14,8 @@ async function init() {
 		const app = express();
 
 		app.use(express.json());
-		app.use(projectsRoute);
+		app.use("/v1", projectsRoute);
+		app.use("/v1", tasksRoute);
 		app.listen(environment.PORT);
 
 		console.log(`MAIN | Connected on port ${environment.PORT}`);
