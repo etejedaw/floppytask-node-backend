@@ -15,6 +15,7 @@ export async function findProjectById(id: string) {
 		where: { id, isActive: true }
 	});
 	if (!project) return;
+
 	return project;
 }
 
@@ -35,8 +36,9 @@ export async function updateProject(id: string, updateProject: UpdateProject) {
 }
 
 export async function removeProject(id: string) {
-	const project = await Projects.update(
-		{ isActive: false },
-		{ where: { id } }
-	);
+	const project = await findProjectById(id);
+	if (!project) return false;
+
+	await Projects.update({ isActive: false }, { where: { id } });
+	return true;
 }

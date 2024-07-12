@@ -31,12 +31,12 @@ Projects.init(
 );
 
 Projects.hasMany(Tasks, {
-	foreignKey: "project_id",
+	foreignKey: "projectId",
 	sourceKey: "id"
 });
 
 Tasks.belongsTo(Projects, {
-	foreignKey: "project_id",
+	foreignKey: "projectId",
 	targetKey: "id"
 });
 
