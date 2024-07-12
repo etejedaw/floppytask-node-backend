@@ -29,7 +29,7 @@ export async function updateProject(id: string, updateProject: UpdateProject) {
 	if (!project) return;
 
 	await Projects.update(updateProject, {
-		where: { id, isActive: true }
+		where: { id }
 	});
 
 	return await findProjectById(id);
