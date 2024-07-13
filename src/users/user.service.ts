@@ -1,6 +1,6 @@
 import { CreateUser, UpdateUser } from "./schemas";
 import { Users } from "./users.model";
-import * as bcryptUtil from "./bcrypt.util";
+import { BcryptUtil } from "./utils";
 
 export async function createUser(CreateUserHash: CreateUser) {
 	const user = await Users.create(CreateUserHash);
@@ -36,8 +36,8 @@ export async function updateUser(email: string, updateUser: UpdateUser) {
 			where: { email }
 		});
 	else {
-		const salt = await bcryptUtil.generateSalt();
-		const hashPassword = await bcryptUtil.hashPassword(password, salt);
+		const salt = await BcryptUtil.generateSalt();
+		const hashPassword = await BcryptUtil.hashPassword(password, salt);
 		const passwordData = { password: hashPassword, salt };
 		await Users.update(
 			{ ...passwordData, ...restUpdateUser },
