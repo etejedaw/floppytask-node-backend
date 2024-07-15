@@ -1,4 +1,4 @@
-import * as userService from "./user.service";
+import * as userService from "./users.service";
 import { CreateUser, Login, Register } from "./schemas";
 import { Users } from "./users.model";
 import type { PayloadToken } from "./schemas/payload-token.schema";

@@ -5,7 +5,7 @@ import type {
 import type { PayloadToken } from "../schemas/payload-token.schema";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { environment } from "../../config";
-import * as userService from "../user.service";
+import * as userService from "../users.service";
 import { UnauthorizedException } from "../../commons/errors";
 
 const options: StrategyOptionsWithoutRequest = {

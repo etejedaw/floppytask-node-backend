@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { ZodError, ZodSchema } from "zod";
+import { ZodError } from "zod";
 import { CustomZodError } from "../../commons/errors";
 import { AuthorizationTokenSchema } from "../schemas";
 
-export function checkToken() {
+export function checkTokenMiddleware() {
 	return (request: Request, response: Response, next: NextFunction) => {
 		try {
 			const data = AuthorizationTokenSchema.parse(request.headers);
-			request.params = data;
+			request.headers = data;
 			next();
 		} catch (error) {
 			if (error instanceof ZodError) {

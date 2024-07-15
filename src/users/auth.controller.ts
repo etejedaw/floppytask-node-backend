@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as authService from "./auth.service";
-import * as userService from "./user.service";
+import * as userService from "./users.service";
 import type { Register, UpdateUser } from "./schemas";
 import { CustomError, NotFoundException } from "../commons/errors";
 import { Users } from "./users.model";
@@ -36,7 +36,7 @@ export async function loginUser(request: Request, response: Response) {
 
 export async function updateUser(request: Request, response: Response) {
 	try {
-		const userBody = request.body as Users;
+		const userBody = request.user as Users;
 		const updateUser = request.body as UpdateUser;
 
 		const userEmail = userBody.email;

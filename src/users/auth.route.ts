@@ -1,6 +1,10 @@
 import { Router } from "express";
 import * as authController from "./auth.controller";
-import { loginMiddleware, jwtMiddleware, checkToken } from "./middlewares";
+import {
+	loginMiddleware,
+	jwtMiddleware,
+	checkTokenMiddleware
+} from "./middlewares";
 import { validateBodySchema } from "../commons/middlewares";
 import { LoginSchema, RegisterSchema, UpdateUserSchema } from "./schemas";
 
@@ -20,19 +24,23 @@ router.post(
 
 router.patch(
 	"/auth/user",
-	[checkToken(), validateBodySchema(UpdateUserSchema), jwtMiddleware],
+	[
+		checkTokenMiddleware(),
+		validateBodySchema(UpdateUserSchema),
+		jwtMiddleware
+	],
 	authController.updateUser
 );
 
 router.delete(
 	"/auth/user",
-	[checkToken(), jwtMiddleware],
+	[checkTokenMiddleware(), jwtMiddleware],
 	authController.deactivateUser
 );
 
 router.get(
 	"/auth/user/me",
-	[checkToken(), jwtMiddleware],
+	[checkTokenMiddleware(), jwtMiddleware],
 	authController.getMeUser
 );
 
