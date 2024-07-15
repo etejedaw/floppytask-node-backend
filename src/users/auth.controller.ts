@@ -1,18 +1,13 @@
 import { Request, Response } from "express";
 import * as authService from "./auth.service";
 import * as userService from "./user.service";
-import {
-	IdParamsSchema,
-	LoginSchema,
-	RegisterSchema,
-	UpdateUserSchema
-} from "./schemas";
-import { ZodError } from "zod";
-import { NotFoundException } from "../errors";
+import type { Register, UpdateUser } from "./schemas";
+import { CustomError, NotFoundException } from "../commons/errors";
+import { Users } from "./users.model";
 
 export async function createUser(request: Request, response: Response) {
 	try {
-		const register = RegisterSchema.parse(request.body);
+		const register = request.body as Register;
 
 		const user = await authService.signUp(register);
 		const token = await authService.generateJwt(user);
@@ -20,96 +15,81 @@ export async function createUser(request: Request, response: Response) {
 		return response.status(200).json({ data: { user, token } });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		if (error instanceof CustomError)
+			return response.status(error.status).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
 }
 
 export async function loginUser(request: Request, response: Response) {
 	try {
-		const loginUser = LoginSchema.parse(request.body);
-
-		const user = await authService.signIn(loginUser);
-		if (!user) throw new Error("Error Login");
+		const user = request.user as Users;
 
 		const token = await authService.generateJwt(user);
 
-		return response.status(200).json({ data: { user, token } });
+		return response.status(200).json({ data: { token } });
 	} catch (error) {
-		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		console.error({ error });
 		return response.status(400).json({ error });
 	}
 }
 
 export async function updateUser(request: Request, response: Response) {
 	try {
-		const idParams = IdParamsSchema.parse(request.params);
-		const updateUser = UpdateUserSchema.parse(request.body);
+		const userBody = request.body as Users;
+		const updateUser = request.body as UpdateUser;
 
-		const user = await userService.findUserById(idParams.userId);
+		const userEmail = userBody.email;
+		const userId = userBody.id;
+
+		const user = await userService.updateUser(userEmail, updateUser)!;
 		if (!user)
-			throw new NotFoundException(
-				`User with id ${idParams.userId} not found`
-			);
+			throw new NotFoundException(`User with id ${userId} not found`);
 
-		const userUpdate = await userService.updateUser(user.email, updateUser);
-		if (!user)
-			throw new NotFoundException(
-				`User with id ${idParams.userId} not found`
-			);
-
-		return response.status(200).json({ data: userUpdate });
+		return response.status(200).json({ data: user });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		if (error instanceof CustomError)
+			return response.status(422).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
 }
 
 export async function deactivateUser(request: Request, response: Response) {
 	try {
-		const idParams = IdParamsSchema.parse(request.params);
+		const userBody = request.user as Users;
+		const userId = userBody.id;
 
-		const user = await userService.findUserById(idParams.userId);
+		const user = await userService.findUserById(userId);
+
 		if (!user)
-			throw new NotFoundException(
-				`User with id ${idParams.userId} not found`
-			);
+			throw new NotFoundException(`User with id ${userId} not found`);
 
-		const isDelete = await userService.removeUser(user.email);
-		if (!isDelete)
-			throw new NotFoundException(
-				`User with id ${idParams.userId} not found`
-			);
+		await userService.removeUser(user.email);
 
 		return response.status(200).json({ data: "Operation Successful" });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		if (error instanceof CustomError)
+			return response.status(422).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
 }
 
-export async function getUser(request: Request, response: Response) {
+export async function getMeUser(request: Request, response: Response) {
 	try {
-		const idParams = IdParamsSchema.parse(request.params);
+		const userBody = request.user as Users;
+		const userId = userBody.id;
 
-		const user = await userService.findUserById(idParams.userId);
+		const user = await userService.findUserById(userId);
 		if (!user)
-			throw new NotFoundException(
-				`User with id ${idParams.userId} not found`
-			);
+			throw new NotFoundException(`User with id ${userId} not found`);
 
 		return response.status(200).json({ data: user });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		if (error instanceof CustomError)
+			return response.status(422).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
 }
