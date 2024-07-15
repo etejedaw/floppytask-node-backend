@@ -2,43 +2,53 @@ import { Projects } from "./projects.model";
 import type { CreateProject } from "./schemas/create-project.schema";
 import type { UpdateProject } from "./schemas/update-project.schema";
 
-export async function findAllProjects() {
+export async function findAllProjects(userId: string) {
 	const projects = await Projects.findAll({
-		where: { isActive: true }
+		where: { userId, isActive: true }
 	});
 	if (projects.length === 0) return;
 	return projects;
 }
 
-export async function findProjectById(id: string) {
+export async function findProjectById(userId: string, projectId: string) {
 	const project = await Projects.findOne({
-		where: { id, isActive: true }
+		where: { id: projectId, userId, isActive: true }
 	});
 	if (!project) return;
 
 	return project;
 }
 
-export async function createProject(createProject: CreateProject) {
-	const project = await Projects.create(createProject);
+export async function createProject(
+	userId: string,
+	createProject: CreateProject
+) {
+	const project = await Projects.create({ ...createProject, userId });
 	return project;
 }
 
-export async function updateProject(id: string, updateProject: UpdateProject) {
-	const project = await findProjectById(id);
+export async function updateProject(
+	userId: string,
+	projectId: string,
+	updateProject: UpdateProject
+) {
+	const project = await findProjectById(userId, projectId);
 	if (!project) return;
 
 	await Projects.update(updateProject, {
-		where: { id }
+		where: { id: projectId, userId }
 	});
 
-	return await findProjectById(id);
+	return await findProjectById(userId, projectId);
 }
 
-export async function removeProject(id: string) {
-	const project = await findProjectById(id);
+export async function removeProject(userId: string, projectId: string) {
+	const project = await findProjectById(userId, projectId);
 	if (!project) return false;
 
-	await Projects.update({ isActive: false }, { where: { id } });
+	await Projects.update(
+		{ isActive: false },
+		{ where: { id: projectId, userId } }
+	);
 	return true;
 }

@@ -1,16 +1,22 @@
 import { Request, Response } from "express";
 import * as projectsService from "./projects.service";
 import {
-	IdParamSchema,
+	IdParamsSchema,
 	CreateProjectSchema,
-	UpdateProjectSchema
+	UpdateProjectSchema,
+	IdParams,
+	CreateProject,
+	UpdateProject
 } from "./schemas";
 import { ZodError } from "zod";
-import { NotFoundException } from "../errors";
+import { NotFoundException } from "../commons/errors";
+import { Users } from "../users/users.model";
 
 export async function findAll(request: Request, response: Response) {
 	try {
-		const projects = await projectsService.findAllProjects();
+		const user = request.user as Users;
+
+		const projects = await projectsService.findAllProjects(user.id);
 		if (!projects) throw new NotFoundException(`Projects not found`);
 
 		return response.status(200).json({ data: projects });
@@ -23,11 +29,16 @@ export async function findAll(request: Request, response: Response) {
 
 export async function findOne(request: Request, response: Response) {
 	try {
-		const params = IdParamSchema.parse(request.params);
-		const project = await projectsService.findProjectById(params.id);
+		const idParams = request.params as IdParams;
+		const user = request.user as Users;
+
+		const project = await projectsService.findProjectById(
+			user.id,
+			idParams.id
+		);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${params.id} not found`
+				`Project with id ${idParams.id} not found`
 			);
 
 		return response.status(200).json({ data: project });
@@ -40,9 +51,13 @@ export async function findOne(request: Request, response: Response) {
 
 export async function create(request: Request, response: Response) {
 	try {
-		const projectSchema = CreateProjectSchema.parse(request.body);
+		const projectSchema = request.body as CreateProject;
+		const user = request.user as Users;
 
-		const project = await projectsService.createProject(projectSchema);
+		const project = await projectsService.createProject(
+			user.id,
+			projectSchema
+		);
 
 		return response.status(200).json({ data: project });
 	} catch (error) {
@@ -55,16 +70,18 @@ export async function create(request: Request, response: Response) {
 
 export async function update(request: Request, response: Response) {
 	try {
-		const params = IdParamSchema.parse(request.params);
-		const updateProjectSchema = UpdateProjectSchema.parse(request.body);
+		const idParams = request.params as IdParams;
+		const user = request.user as Users;
+		const updateProject = request.body as UpdateProject;
 
 		const project = await projectsService.updateProject(
-			params.id,
-			updateProjectSchema
+			user.id,
+			idParams.id,
+			updateProject
 		);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${params.id} not found`
+				`Project with id ${idParams.id} not found`
 			);
 
 		return response.status(200).json({ data: project });
@@ -80,12 +97,13 @@ export async function update(request: Request, response: Response) {
 
 export async function remove(request: Request, response: Response) {
 	try {
-		const params = IdParamSchema.parse(request.params);
+		const idParams = request.params as IdParams;
+		const user = request.user as Users;
 
-		const project = projectsService.removeProject(params.id);
+		const project = projectsService.removeProject(user.id, idParams.id);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${params.id} not found`
+				`Project with id ${idParams.id} not found`
 			);
 
 		return response.status(200).json({ data: project });
