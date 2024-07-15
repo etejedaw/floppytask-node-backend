@@ -1,13 +1,6 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
+import type { IdParams, CreateProject, UpdateProject } from "./schemas";
 import * as projectsService from "./projects.service";
-import {
-	IdParamsSchema,
-	CreateProjectSchema,
-	UpdateProjectSchema,
-	IdParams,
-	CreateProject,
-	UpdateProject
-} from "./schemas";
 import { ZodError } from "zod";
 import { NotFoundException } from "../commons/errors";
 import { Users } from "../users/users.model";

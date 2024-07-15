@@ -1,6 +1,5 @@
+import type { CreateProject, UpdateProject } from "./schemas";
 import { Projects } from "./projects.model";
-import type { CreateProject } from "./schemas/create-project.schema";
-import type { UpdateProject } from "./schemas/update-project.schema";
 
 export async function findAllProjects(userId: string) {
 	const projects = await Projects.findAll({
