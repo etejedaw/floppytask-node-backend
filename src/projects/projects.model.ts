@@ -1,12 +1,13 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config";
-import { Tasks } from "../tasks/tasks.model";
+import { Users } from "../users/users.model";
 
 class Projects extends Model {
 	id: string;
 	title: string;
 	description: string;
 	isActive: boolean;
+	userId: string;
 }
 
 Projects.init(
@@ -30,13 +31,13 @@ Projects.init(
 	{ sequelize, modelName: "projects" }
 );
 
-Projects.hasMany(Tasks, {
-	foreignKey: "projectId",
+Users.hasMany(Projects, {
+	foreignKey: "userId",
 	sourceKey: "id"
 });
 
-Tasks.belongsTo(Projects, {
-	foreignKey: "projectId",
+Projects.belongsTo(Users, {
+	foreignKey: "userId",
 	targetKey: "id"
 });
 
