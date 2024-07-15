@@ -1,5 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../config";
+import { Projects } from "../projects/projects.model";
 
 class Tasks extends Model {
 	id: string;
@@ -11,6 +12,7 @@ class Tasks extends Model {
 	startDate: Date;
 	endDate: Date;
 	isDone: boolean;
+	projectId: string;
 }
 
 Tasks.init(
@@ -48,5 +50,15 @@ Tasks.init(
 	},
 	{ sequelize, modelName: "tasks" }
 );
+
+Projects.hasMany(Tasks, {
+	foreignKey: "projectId",
+	sourceKey: "id"
+});
+
+Tasks.belongsTo(Projects, {
+	foreignKey: "projectId",
+	targetKey: "id"
+});
 
 export { Tasks };

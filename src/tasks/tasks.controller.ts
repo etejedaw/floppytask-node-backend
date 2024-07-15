@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as tasksService from "./tasks.service";
-import { NotFoundException } from "../errors";
+import { NotFoundException } from "../commons/errors";
 import {
 	CreateTaskSchema,
 	ProjectTaskParamsSchema,
