@@ -11,6 +11,11 @@ import {
 	IdParamsSchema,
 	UpdateProjectSchema
 } from "./schemas";
+import {
+	CreateTaskSchema,
+	ProjectTaskParamsSchema,
+	UpdateTaskSchema
+} from "../tasks/schemas";
 
 const router = Router();
 
@@ -21,7 +26,7 @@ router.get(
 );
 
 router.get(
-	"/projects/:id",
+	"/projects/:projectId",
 	[
 		validateParamsSchema(IdParamsSchema),
 		checkTokenMiddleware(),
@@ -41,7 +46,7 @@ router.post(
 );
 
 router.patch(
-	"/projects/:id",
+	"/projects/:projectId",
 	[
 		validateParamsSchema(IdParamsSchema),
 		validateBodySchema(UpdateProjectSchema),
@@ -52,7 +57,7 @@ router.patch(
 );
 
 router.delete(
-	"/projects/:id",
+	"/projects/:projectId",
 	[
 		validateParamsSchema(IdParamsSchema),
 		checkTokenMiddleware(),
@@ -63,31 +68,53 @@ router.delete(
 
 router.get(
 	"/projects/:projectId/tasks",
-	[checkTokenMiddleware(), jwtMiddleware],
+	[
+		validateParamsSchema(IdParamsSchema),
+		checkTokenMiddleware(),
+		jwtMiddleware
+	],
 	tasksController.findAllByProject
 );
 
 router.get(
 	"/projects/:projectId/tasks/:taskId",
-	[checkTokenMiddleware(), jwtMiddleware],
+	[
+		validateParamsSchema(ProjectTaskParamsSchema),
+		checkTokenMiddleware(),
+		jwtMiddleware
+	],
 	tasksController.findOne
 );
 
 router.post(
 	"/projects/:projectId/tasks",
-	[checkTokenMiddleware(), jwtMiddleware],
+	[
+		validateParamsSchema(IdParamsSchema),
+		validateBodySchema(CreateTaskSchema),
+		checkTokenMiddleware(),
+		jwtMiddleware
+	],
 	tasksController.create
 );
 
 router.patch(
 	"/projects/:projectId/tasks/:taskId",
-	[checkTokenMiddleware(), jwtMiddleware],
+	[
+		validateParamsSchema(ProjectTaskParamsSchema),
+		validateBodySchema(UpdateTaskSchema),
+		checkTokenMiddleware(),
+		jwtMiddleware
+	],
 	tasksController.update
 );
 
 router.delete(
 	"/projects/:projectId/tasks/:taskId",
-	[checkTokenMiddleware(), jwtMiddleware],
+	[
+		validateParamsSchema(ProjectTaskParamsSchema),
+		checkTokenMiddleware(),
+		jwtMiddleware
+	],
 	tasksController.remove
 );
 

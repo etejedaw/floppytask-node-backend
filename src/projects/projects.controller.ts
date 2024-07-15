@@ -27,11 +27,11 @@ export async function findOne(request: Request, response: Response) {
 
 		const project = await projectsService.findProjectById(
 			user.id,
-			idParams.id
+			idParams.projectId
 		);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${idParams.id} not found`
+				`Project with id ${idParams.projectId} not found`
 			);
 
 		return response.status(200).json({ data: project });
@@ -69,12 +69,12 @@ export async function update(request: Request, response: Response) {
 
 		const project = await projectsService.updateProject(
 			user.id,
-			idParams.id,
+			idParams.projectId,
 			updateProject
 		);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${idParams.id} not found`
+				`Project with id ${idParams.projectId} not found`
 			);
 
 		return response.status(200).json({ data: project });
@@ -93,10 +93,13 @@ export async function remove(request: Request, response: Response) {
 		const idParams = request.params as IdParams;
 		const user = request.user as Users;
 
-		const project = projectsService.removeProject(user.id, idParams.id);
+		const project = projectsService.removeProject(
+			user.id,
+			idParams.projectId
+		);
 		if (!project)
 			throw new NotFoundException(
-				`Project with id ${idParams.id} not found`
+				`Project with id ${idParams.projectId} not found`
 			);
 
 		return response.status(200).json({ data: project });

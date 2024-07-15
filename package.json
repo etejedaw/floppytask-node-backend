@@ -5,6 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "node dist/app.js",
+		"start:local": "nodemon -w './**/*.ts' --exec node -r ts-node/register --env-file=.env.production.local ./src/app.ts",
 		"dev": "nodemon -w './**/*.ts' --exec node -r ts-node/register --env-file=.env ./src/app.ts",
 		"build": "tsc -p .",
 		"prettier": "prettier --write src/**/*.ts"

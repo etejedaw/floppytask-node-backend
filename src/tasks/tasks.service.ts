@@ -1,15 +1,31 @@
+import { Projects } from "../projects/projects.model";
 import { CreateTask, UpdateTask } from "./schemas";
 import { Tasks } from "./tasks.model";
 
-export async function findAllTasks() {
-	const tasks = await Tasks.findAll();
+export async function findAllTasks(userId: string) {
+	const tasks = await Tasks.findAll({
+		include: [
+			{
+				model: Projects,
+				where: { isActive: true, userId },
+				required: true
+			}
+		]
+	});
 	if (tasks.length === 0) return;
 
 	return tasks;
 }
 
-export async function findAllTasksByProject(projectId: string) {
+export async function findAllTasksByProject(userId: string, projectId: string) {
 	const tasks = await Tasks.findAll({
+		include: [
+			{
+				model: Projects,
+				where: { isActive: true, userId },
+				required: true
+			}
+		],
 		where: { projectId }
 	});
 	if (tasks.length === 0) return;
@@ -17,9 +33,20 @@ export async function findAllTasksByProject(projectId: string) {
 	return tasks;
 }
 
-export async function findTaskById(projectId: string, taskId: string) {
+export async function findTaskById(
+	userId: string,
+	projectId: string,
+	taskId: string
+) {
 	const task = await Tasks.findOne({
-		where: { id: taskId, projectId }
+		include: [
+			{
+				model: Projects,
+				where: { id: projectId, isActive: true, userId },
+				required: true
+			}
+		],
+		where: { id: taskId }
 	});
 	if (!task) return;
 
@@ -35,26 +62,31 @@ export async function creteTask(projectId: string, createTask: CreateTask) {
 }
 
 export async function updateTask(
+	userId: string,
 	projectId: string,
 	taskId: string,
 	updateTask: UpdateTask
 ) {
-	const task = await findTaskById(projectId, taskId);
+	const task = await findTaskById(userId, projectId, taskId);
 	if (!task) return;
 
 	await Tasks.update(updateTask, {
 		where: { id: taskId }
 	});
 
-	return await findTaskById(projectId, taskId);
+	return await findTaskById(userId, projectId, taskId);
 }
 
-export async function removeTask(projectId: string, taskId: string) {
-	const task = await findTaskById(projectId, taskId);
+export async function removeTask(
+	userId: string,
+	projectId: string,
+	taskId: string
+) {
+	const task = await findTaskById(userId, projectId, taskId);
 	if (!task) return false;
 
 	await Tasks.destroy({
-		where: { projectId, taskId }
+		where: { id: taskId, projectId }
 	});
 
 	return true;

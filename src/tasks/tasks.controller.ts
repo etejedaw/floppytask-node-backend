@@ -1,17 +1,27 @@
+import type {
+	CreateTask,
+	ProjectIdParams,
+	ProjectTaskParams,
+	UpdateTask
+} from "./schemas";
 import { Request, Response } from "express";
 import * as tasksService from "./tasks.service";
-import { NotFoundException } from "../commons/errors";
+import * as projectService from "../projects/projects.service";
 import {
-	CreateTaskSchema,
-	ProjectTaskParamsSchema,
-	UpdateTaskSchema
-} from "./schemas";
+	CustomError,
+	ForbiddenException,
+	NotFoundException
+} from "../commons/errors";
+import { UpdateTaskSchema, ProjectTaskParamsSchema } from "./schemas";
 import { ZodError } from "zod";
-import { ProjectIdParamsSchema } from "./schemas";
+import { Users } from "../users/users.model";
+import { IdParams } from "../projects/schemas";
 
 export async function findAll(request: Request, response: Response) {
 	try {
-		const tasks = await tasksService.findAllTasks();
+		const user = request.user as Users;
+
+		const tasks = await tasksService.findAllTasks(user.id);
 		if (!tasks) throw new NotFoundException(`Tasks not found`);
 
 		return response.status(200).json({ data: tasks });
@@ -24,9 +34,11 @@ export async function findAll(request: Request, response: Response) {
 
 export async function findAllByProject(request: Request, response: Response) {
 	try {
-		const projectIdParams = ProjectIdParamsSchema.parse(request.params);
+		const projectIdParams = request.params as ProjectIdParams;
+		const user = request.user as Users;
 
 		const tasks = await tasksService.findAllTasksByProject(
+			user.id,
 			projectIdParams.projectId
 		);
 		if (!tasks)
@@ -44,9 +56,11 @@ export async function findAllByProject(request: Request, response: Response) {
 
 export async function findOne(request: Request, response: Response) {
 	try {
-		const projectTaskParams = ProjectTaskParamsSchema.parse(request.params);
+		const projectTaskParams = request.params as ProjectTaskParams;
+		const user = request.user as Users;
 
 		const task = await tasksService.findTaskById(
+			user.id,
 			projectTaskParams.projectId,
 			projectTaskParams.taskId
 		);
@@ -57,7 +71,7 @@ export async function findOne(request: Request, response: Response) {
 
 		return response.status(200).json({ data: task });
 	} catch (error) {
-		if (error instanceof NotFoundException)
+		if (error instanceof CustomError)
 			return response.status(error.status).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
@@ -65,36 +79,45 @@ export async function findOne(request: Request, response: Response) {
 
 export async function create(request: Request, response: Response) {
 	try {
-		const projectIdParams = ProjectIdParamsSchema.parse(request.params);
-		const taskSchema = CreateTaskSchema.parse(request.body);
+		const IdParams = request.params as IdParams;
+		const createTask = request.body as CreateTask;
+		const user = request.user as Users;
+
+		const project = await projectService.findProjectById(
+			user.id,
+			IdParams.projectId
+		);
+		if (!project) throw new ForbiddenException(`Forbidden`);
 
 		const task = await tasksService.creteTask(
-			projectIdParams.projectId,
-			taskSchema
+			IdParams.projectId,
+			createTask
 		);
 
 		return response.status(200).json({ data: task });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
+		if (error instanceof CustomError)
+			return response.status(error.status).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
 }
 
 export async function update(request: Request, response: Response) {
 	try {
-		const params = ProjectTaskParamsSchema.parse(request.params);
-		const updateTaskSchema = UpdateTaskSchema.parse(request.body);
+		const projectTaskParams = request.params as ProjectTaskParams;
+		const updateTask = request.body as UpdateTask;
+		const user = request.user as Users;
 
 		const task = await tasksService.updateTask(
-			params.projectId,
-			params.taskId,
-			updateTaskSchema
+			user.id,
+			projectTaskParams.projectId,
+			projectTaskParams.taskId,
+			updateTask
 		);
 		if (!task)
 			throw new NotFoundException(
-				`Task with id ${params.taskId} not found in project ${params.projectId}`
+				`Task with id ${projectTaskParams.taskId} not found in project ${projectTaskParams.projectId}`
 			);
 
 		return response.status(200).json({ data: task });
@@ -103,20 +126,23 @@ export async function update(request: Request, response: Response) {
 
 export async function remove(request: Request, response: Response) {
 	try {
-		const params = ProjectTaskParamsSchema.parse(request.params);
+		const projectTaskParams = request.params as ProjectTaskParams;
+		const user = request.user as Users;
 
-		const task = tasksService.removeTask(params.projectId, params.taskId);
+		const task = tasksService.removeTask(
+			user.id,
+			projectTaskParams.projectId,
+			projectTaskParams.taskId
+		);
 		if (!task)
 			throw new NotFoundException(
-				`Task with id ${params.taskId} not found in project ${params.projectId}`
+				`Task with id ${projectTaskParams.taskId} not found in project ${projectTaskParams.projectId}`
 			);
 
 		return response.status(200).json({ data: task });
 	} catch (error) {
 		console.error({ error, body: request.body });
-		if (error instanceof ZodError)
-			return response.status(422).json({ error: error.issues });
-		if (error instanceof NotFoundException)
+		if (error instanceof CustomError)
 			return response.status(error.status).json({ error: error.message });
 		return response.status(400).json({ error });
 	}
