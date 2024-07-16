@@ -12,8 +12,6 @@ import {
 	ForbiddenException,
 	NotFoundException
 } from "../commons/errors";
-import { UpdateTaskSchema, ProjectTaskParamsSchema } from "./schemas";
-import { ZodError } from "zod";
 import { Users } from "../users/users.model";
 import { IdParams } from "../projects/schemas";
 
