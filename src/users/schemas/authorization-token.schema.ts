@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const AuthorizationTokenSchema = z
 	.object({
-		authorization: z.string()
+		authorization: z.string({ message: "Bearer Token Not Found" })
 	})
 	.readonly();
 
