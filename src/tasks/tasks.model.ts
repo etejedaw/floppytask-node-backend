@@ -22,8 +22,12 @@ Tasks.init(
 			defaultValue: DataTypes.UUIDV4,
 			primaryKey: true
 		},
-		title: {
+		internalCode: {
 			type: DataTypes.STRING
+		},
+		title: {
+			type: DataTypes.STRING,
+			allowNull: false
 		},
 		description: {
 			type: DataTypes.STRING
