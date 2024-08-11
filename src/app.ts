@@ -1,38 +1,19 @@
-import express from "express";
 import { environment, sequelize } from "./config";
-import projectsRoute from "./projects/projects.route";
-import tasksRoute from "./tasks/tasks.route";
-import authRoute from "./users/auth.route";
 import "./tasks/tasks.model";
 import "./projects/projects.model";
 import "./users/users.model";
-import morgan from "morgan";
-import passport from "passport";
-import { localAuthStrategy, jwtAuthStrategy } from "./users/strategies";
+import { server } from "./server";
 
 async function init() {
 	try {
+		const port = environment.PORT;
+
 		await sequelize.sync();
-		console.log(`DATABASE | Connection stablished`);
+		console.log(`${new Date()} | MAIN | Database Connection stablished`);
 
-		const app = express();
-
-		app.use(morgan("dev"));
-		app.use(express.json());
-
-		app.use(passport.initialize());
-
-		passport.use(localAuthStrategy);
-		passport.use(jwtAuthStrategy);
-
-		app.use("/v1", authRoute);
-		app.use("/v1", projectsRoute);
-		app.use("/v1", tasksRoute);
-
-		app.listen(environment.PORT);
-
-		console.log(`MAIN | Connected on port ${environment.PORT}`);
-	} catch (error: any) {
+		server(port);
+		console.log(`${new Date()} | MAIN | Server Connected on port ${port}`);
+	} catch (error) {
 		console.error(error);
 	}
 }
