@@ -4,6 +4,7 @@ import { Users } from "../users/users.model";
 
 class Projects extends Model {
 	id: string;
+	internalCode: string;
 	title: string;
 	description: string;
 	isActive: boolean;
@@ -17,8 +18,12 @@ Projects.init(
 			defaultValue: DataTypes.UUIDV4,
 			primaryKey: true
 		},
-		title: {
+		internalCode: {
 			type: DataTypes.STRING
+		},
+		title: {
+			type: DataTypes.STRING,
+			allowNull: false
 		},
 		description: {
 			type: DataTypes.STRING
