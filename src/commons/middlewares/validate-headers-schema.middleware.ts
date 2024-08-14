@@ -6,7 +6,7 @@ export function validateHeadersSchema(zodSchema: ZodSchema) {
 	return (request: Request, response: Response, next: NextFunction) => {
 		try {
 			const data = zodSchema.parse(request.headers);
-			request.params = data;
+			request.headers = data;
 			next();
 		} catch (error) {
 			if (error instanceof ZodError) {

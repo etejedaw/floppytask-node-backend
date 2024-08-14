@@ -6,7 +6,7 @@ export function validateQuerySchema(zodSchema: ZodSchema) {
 	return (request: Request, response: Response, next: NextFunction) => {
 		try {
 			const data = zodSchema.parse(request.query);
-			request.params = data;
+			request.query = data;
 			next();
 		} catch (error) {
 			if (error instanceof ZodError) {
