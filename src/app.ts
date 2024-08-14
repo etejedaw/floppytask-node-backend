@@ -9,7 +9,7 @@ async function init() {
 		const port = environment.PORT;
 
 		await sequelize.sync();
-		console.log(`${new Date()} | MAIN | Database Connection stablished`);
+		console.log(`${new Date()} | MAIN | Database Connection Established`);
 
 		server(port);
 		console.log(`${new Date()} | MAIN | Server Connected on port ${port}`);
