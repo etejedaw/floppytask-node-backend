@@ -2,51 +2,26 @@ import { Projects } from "../projects/projects.model";
 import { CreateTask, UpdateTask } from "./schemas";
 import { Tasks } from "./tasks.model";
 
-export async function findAllTasks(userId: string) {
-	const tasks = await Tasks.findAll({
-		include: [
-			{
-				model: Projects,
-				where: { isActive: true, userId },
-				required: true
-			}
-		]
-	});
-	if (tasks.length === 0) return;
-
-	return tasks;
-}
-
-export async function findAllTasksByProject(userId: string, projectId: string) {
-	const tasks = await Tasks.findAll({
-		include: [
-			{
-				model: Projects,
-				where: { isActive: true, userId },
-				required: true
-			}
-		],
-		where: { projectId }
-	});
-	if (tasks.length === 0) return;
-
-	return tasks;
-}
-
-export async function findTaskById(
-	userId: string,
-	projectId: string,
-	taskId: string
+export async function findAll(
+	whereProject: Partial<Projects>,
+	whereTask?: Partial<Tasks>
 ) {
-	const task = await Tasks.findOne({
-		include: [
-			{
-				model: Projects,
-				where: { id: projectId, isActive: true, userId },
-				required: true
-			}
-		],
-		where: { id: taskId }
+	const tasks = await Tasks.findAll({
+		where: whereTask,
+		include: [{ model: Projects, where: whereProject }]
+	});
+	if (tasks.length === 0) return;
+
+	return tasks;
+}
+
+export async function findOne(
+	whereProject: Partial<Projects>,
+	whereTask: Partial<Tasks>
+) {
+	const task = Tasks.findOne({
+		where: whereTask,
+		include: [{ model: Projects, where: whereProject }]
 	});
 	if (!task) return;
 
@@ -63,31 +38,24 @@ export async function creteTask(projectId: string, createTask: CreateTask) {
 
 export async function updateTask(
 	userId: string,
-	projectId: string,
 	taskId: string,
 	updateTask: UpdateTask
 ) {
-	const task = await findTaskById(userId, projectId, taskId);
+	const task = await findOne({ userId }, { id: taskId });
 	if (!task) return;
 
 	await Tasks.update(updateTask, {
 		where: { id: taskId }
 	});
 
-	return await findTaskById(userId, projectId, taskId);
+	return await findOne({ userId }, { id: taskId });
 }
 
-export async function removeTask(
-	userId: string,
-	projectId: string,
-	taskId: string
-) {
-	const task = await findTaskById(userId, projectId, taskId);
+export async function removeTask(userId: string, taskId: string) {
+	const task = await findOne({ userId }, { id: taskId });
 	if (!task) return false;
 
-	await Tasks.destroy({
-		where: { id: taskId, projectId }
-	});
+	await Tasks.destroy({ where: { id: taskId } });
 
 	return true;
 }
