@@ -14,12 +14,20 @@ import {
 } from "../commons/errors";
 import { Users } from "../users/users.model";
 import { IdParams } from "../projects/schemas";
+import { Projects } from "../projects/projects.model";
+import { Tasks } from "./tasks.model";
+import { TaskIdParams } from "./schemas/task-id-params.schema";
 
-export async function findAll(request: Request, response: Response) {
+export async function findAllByUser(request: Request, response: Response) {
 	try {
 		const user = request.user as Users;
 
-		const tasks = await tasksService.findAllTasks(user.id);
+		const whereProject: Partial<Projects> = {
+			isActive: true,
+			userId: user.id
+		};
+
+		const tasks = await tasksService.findAll(whereProject);
 		if (!tasks) throw new NotFoundException(`Tasks not found`);
 
 		return response.status(200).json({ data: tasks });
@@ -35,10 +43,13 @@ export async function findAllByProject(request: Request, response: Response) {
 		const projectIdParams = request.params as ProjectIdParams;
 		const user = request.user as Users;
 
-		const tasks = await tasksService.findAllTasksByProject(
-			user.id,
-			projectIdParams.projectId
-		);
+		const whereProject: Partial<Projects> = {
+			userId: user.id,
+			id: projectIdParams.projectId,
+			isActive: true
+		};
+
+		const tasks = await tasksService.findAll(whereProject);
 		if (!tasks)
 			throw new NotFoundException(
 				`Tasks not found in project ${projectIdParams.projectId}`
@@ -54,17 +65,22 @@ export async function findAllByProject(request: Request, response: Response) {
 
 export async function findOne(request: Request, response: Response) {
 	try {
-		const projectTaskParams = request.params as ProjectTaskParams;
+		const TaskIdParams = request.params as TaskIdParams;
 		const user = request.user as Users;
 
-		const task = await tasksService.findTaskById(
-			user.id,
-			projectTaskParams.projectId,
-			projectTaskParams.taskId
-		);
+		const whereProject: Partial<Projects> = {
+			userId: user.id,
+			isActive: true
+		};
+
+		const whereTask: Partial<Tasks> = {
+			id: TaskIdParams.taskId
+		};
+
+		const task = await tasksService.findOne(whereProject, whereTask);
 		if (!task)
 			throw new NotFoundException(
-				`Task with id ${projectTaskParams.taskId} not found in project ${projectTaskParams.projectId}`
+				`Task with id ${TaskIdParams.taskId} not found in user ${user.id}`
 			);
 
 		return response.status(200).json({ data: task });
@@ -85,7 +101,10 @@ export async function create(request: Request, response: Response) {
 			user.id,
 			IdParams.projectId
 		);
-		if (!project) throw new ForbiddenException(`Forbidden`);
+		if (!project)
+			throw new ForbiddenException(
+				`User has not the permissions to create task in the project ${IdParams.projectId}`
+			);
 
 		const task = await tasksService.creteTask(
 			IdParams.projectId,
@@ -103,19 +122,18 @@ export async function create(request: Request, response: Response) {
 
 export async function update(request: Request, response: Response) {
 	try {
-		const projectTaskParams = request.params as ProjectTaskParams;
+		const projectTaskParams = request.params as TaskIdParams;
 		const updateTask = request.body as UpdateTask;
 		const user = request.user as Users;
 
 		const task = await tasksService.updateTask(
 			user.id,
-			projectTaskParams.projectId,
 			projectTaskParams.taskId,
 			updateTask
 		);
 		if (!task)
 			throw new NotFoundException(
-				`Task with id ${projectTaskParams.taskId} not found in project ${projectTaskParams.projectId}`
+				`Task with id ${projectTaskParams.taskId} not found`
 			);
 
 		return response.status(200).json({ data: task });
@@ -124,17 +142,13 @@ export async function update(request: Request, response: Response) {
 
 export async function remove(request: Request, response: Response) {
 	try {
-		const projectTaskParams = request.params as ProjectTaskParams;
+		const projectTaskParams = request.params as TaskIdParams;
 		const user = request.user as Users;
 
-		const task = tasksService.removeTask(
-			user.id,
-			projectTaskParams.projectId,
-			projectTaskParams.taskId
-		);
+		const task = tasksService.removeTask(user.id, projectTaskParams.taskId);
 		if (!task)
 			throw new NotFoundException(
-				`Task with id ${projectTaskParams.taskId} not found in project ${projectTaskParams.projectId}`
+				`Task with id ${projectTaskParams.taskId} not found`
 			);
 
 		return response.status(200).json({ data: task });
