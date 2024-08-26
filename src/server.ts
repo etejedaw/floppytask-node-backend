@@ -5,6 +5,7 @@ import passport from "passport";
 import authRoute from "./users/auth.route";
 import projectsRoute from "./projects/projects.route";
 import tasksRoute from "./tasks/tasks.route";
+import { limiter } from "./config";
 
 export function server(port: number) {
 	const VERSION_PREFIX = "/v1";
@@ -12,6 +13,7 @@ export function server(port: number) {
 		const app = express();
 
 		app.use(morgan("dev"));
+		app.use(limiter);
 		app.use(express.json());
 
 		app.use(passport.initialize());
