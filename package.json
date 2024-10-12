@@ -6,7 +6,8 @@
 	"scripts": {
 		"start": "node dist/app.js",
 		"start:prod": "nodemon -w './**/*.ts' --exec node -r ts-node/register --env-file=.env.production.local ./src/app.ts",
-		"start:dev": "nodemon -w './**/*.ts' --exec node -r ts-node/register --env-file=.env.development.local ./src/app.ts",
+		"start:stg": "nodemon -w './**/*.ts' --exec node -r ts-node/register --env-file=.env.staging.local ./src/app.ts",
+		"start:dev": "nodemon -w './**/*.ts' --exec node -r ts-node/register ./src/app.ts",
 		"build": "tsc -p .",
 		"prettier": "prettier --write src/**/*.ts"
 	},
@@ -39,6 +40,8 @@
 		"passport": "^0.7.0",
 		"passport-jwt": "^4.0.1",
 		"passport-local": "^1.0.0",
+		"pino": "^9.3.2",
+		"pino-pretty": "^11.2.2",
 		"sequelize": "^6.37.3",
 		"zod": "^3.23.8"
 	}
